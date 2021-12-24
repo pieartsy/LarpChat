@@ -1,7 +1,13 @@
 import discord
 from discord.commands import Option
 
+#to join paths
+import os
+
 bot = discord.Bot()
+
+#discord bot token
+token = os.environ.get('TOKEN')
 
 def platform_post(platform=str):
     if platform == "Flitter":
@@ -27,4 +33,4 @@ async def post(
     await webhook.delete()
 
 
-bot.run("OTIxNjY0NjQ4NjExMjMzODQy.Yb2NFw.CeI7pvyPxdZ9m0uM95XFF3VIpIM")
+bot.run(token)
