@@ -33,9 +33,10 @@ class postEngagement(View):
       # await interaction.followup.send("What say you?", ephemeral=True, delete_after=3.0)
 
         comment = await bot.wait_for(event='message')
-        await comment.delete()
-        shareComment = f"> {self.makepost}\n\n ***@{self.handle}*** {comment.content}"
-        await post(interaction, self.platform, "handle", shareComment, None)
+        if comment:
+            await comment.delete()
+            shareComment = f"> {self.makepost}\n\n ***@{self.handle}*** {comment.content}"
+            await post(interaction, self.platform, "handle", shareComment, None)
 
     #makes a thread where you can reply to the original post
     @discord.ui.button(label="reply", style=discord.ButtonStyle.primary, emoji="🗨")
@@ -46,8 +47,9 @@ class postEngagement(View):
 #        await interaction.followup.send("What say you?:", ephemeral=True, delete_after=3.0)
 
         reply = await bot.wait_for(event='message')
-        await reply.delete()
-        await post(interaction, self.platform, "handle", reply.content, self.thread)
+        if reply:
+            await reply.delete()
+            await post(interaction, self.platform, "handle", reply.content, self.thread)
 
 
     #increments if you haven't liked the post and decrements if you have
@@ -90,6 +92,7 @@ async def channelmaker(
     platforms = ['Bloggity', 'Flitter', 'XPosure']
     for platform in platforms:
         if discord.utils.get(ctx.guild.channels, name=platform.lower()):
+            await ctx.delete()
             await ctx.respond("These channels already exist!", ephemeral=True)
             break
         else:
@@ -112,7 +115,7 @@ async def post(
     if not isinstance(ctx, Interaction):
         await ctx.delete()
     content = platform_post(platform, handle, makepost)
-    view = postEngagement(ctx, platform, handle, makepost)
+    view = postEngagement(platform, handle, makepost)
     webhooks = await ctx.guild.webhooks()
     #gets specific webhook that matches the platform name
     webhook = discord.utils.get(webhooks, name=platform)
