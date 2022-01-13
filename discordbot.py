@@ -31,10 +31,19 @@ class postEngagement(View):
     async def share (self, button: Button, interaction: Interaction):
         await interaction.response.defer()
       # await interaction.followup.send("What say you?", ephemeral=True, delete_after=3.0)
+  #      quote = self.makepost
 
-        comment = await bot.wait_for(event='message')
+  
+        def check(m):
+            if m.author == interaction.user:
+                return m    
+                
+        comment = await bot.wait_for(event='message', check=check)
+
         if comment:
             await comment.delete()
+    #        quote += "\n" + self.makepost
+   #         print(quote)
             shareComment = f"> {self.makepost}\n\n ***@{self.handle}*** {comment.content}"
             await post(interaction, self.platform, "handle", shareComment, None)
 
@@ -45,8 +54,11 @@ class postEngagement(View):
             self.thread = await interaction.message.create_thread(name=f"reply to @{self.handle}")
         await interaction.response.defer()
 #        await interaction.followup.send("What say you?:", ephemeral=True, delete_after=3.0)
+        def check(m):
+            if m.author == interaction.user:
+                return m
 
-        reply = await bot.wait_for(event='message')
+        reply = await bot.wait_for(event='message', check=check)
         if reply:
             await reply.delete()
             await post(interaction, self.platform, "handle", reply.content, self.thread)
