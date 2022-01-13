@@ -14,6 +14,8 @@ token = os.environ.get('TOKEN')
 #token of my test server
 guildID = 385833475954966529
 
+platforms = ['Bloggity', 'Flitter', 'XPosure']
+
 #makes post buttons
 class postEngagement(View):
     def __init__(self, platform, handle, makepost):
@@ -29,15 +31,15 @@ class postEngagement(View):
     #A retweet/share with comment
     @discord.ui.button(label="share", style=discord.ButtonStyle.green, emoji="🔁")
     async def share (self, button: Button, interaction: Interaction):
+
         await interaction.response.defer()
       # await interaction.followup.send("What say you?", ephemeral=True, delete_after=3.0)
   #      quote = self.makepost
 
-  
         def check(m):
             if m.author == interaction.user:
-                return m    
-                
+                return m
+
         comment = await bot.wait_for(event='message', check=check)
 
         if comment:
@@ -45,15 +47,16 @@ class postEngagement(View):
     #        quote += "\n" + self.makepost
    #         print(quote)
             shareComment = f"> {self.makepost}\n\n ***@{self.handle}*** {comment.content}"
-            await post(interaction, self.platform, "handle", shareComment, None)
+            await post(interaction, self.platform, interaction.user.display_name, interaction.message, shareComment, None)
 
     #makes a thread where you can reply to the original post
     @discord.ui.button(label="reply", style=discord.ButtonStyle.primary, emoji="🗨")
     async def reply (self, button: Button, interaction: Interaction):
+
         if self.thread == None:
             self.thread = await interaction.message.create_thread(name=f"reply to @{self.handle}")
         await interaction.response.defer()
-#        await interaction.followup.send("What say you?:", ephemeral=True, delete_after=3.0)
+    #   await interaction.followup.send("What say you?:", ephemeral=True, delete_after=3.0)
         def check(m):
             if m.author == interaction.user:
                 return m
@@ -61,7 +64,7 @@ class postEngagement(View):
         reply = await bot.wait_for(event='message', check=check)
         if reply:
             await reply.delete()
-            await post(interaction, self.platform, "handle", reply.content, self.thread)
+            await post(interaction, self.platform, interaction.user.display_name, interaction.message, reply.content, self.thread)
 
 
     #increments if you haven't liked the post and decrements if you have
@@ -88,11 +91,13 @@ def platform_post(platform=str, handle=str, makepost=str):
             return(error)
         else:
             embed=discord.Embed(description=makepost, title="@" + handle, colour=0x55acee)
+            return(embed)
     elif platform == "XPosure":
         embed=discord.Embed(description=makepost, title="@" + handle, colour=0xE1306C)
+        return(embed)
     elif platform == "Bloggity":
         embed=discord.Embed(description=makepost, title="@" + handle, colour=0xffea00)
-    return(embed)
+        return(embed)
 
 
 # makes 3 channels with webhooks for the 'platforms'
@@ -101,7 +106,6 @@ async def channelmaker(
     ctx,
     ):
     """Make channels and webhooks"""
-    platforms = ['Bloggity', 'Flitter', 'XPosure']
     for platform in platforms:
         if discord.utils.get(ctx.guild.channels, name=platform.lower()):
             await ctx.delete()
@@ -114,21 +118,14 @@ async def channelmaker(
             await postChannel.create_webhook(name=platform)
 
 # makes a post for the bot
-@bot.slash_command(guild_ids=[385833475954966529])
-async def post(
-    ctx,
-    platform: Option(str, choices=["Bloggity", "Flitter", "XPosure"]),
-    handle: str,
-    makepost: Option(str, label="post"),
-    thread: Option(int, required=False, default=None)
-    ):
-    """Make a social media post"""
+#@bot.slash_command(guild_ids=[385833475954966529])
+async def post(platform, handle, msg, makepost, thread=None):
     #'responds' to slash command ping if the ctx is NOT an Interaction (ie is not from postEngagement buttons).
-    if not isinstance(ctx, Interaction):
-        await ctx.delete()
     content = platform_post(platform, handle, makepost)
+
     view = postEngagement(platform, handle, makepost)
-    webhooks = await ctx.guild.webhooks()
+            
+    webhooks = await msg.guild.webhooks()
     #gets specific webhook that matches the platform name
     webhook = discord.utils.get(webhooks, name=platform)
     #if the content of the post is an embed and there's a view (ie reaction buttons), send message
@@ -137,11 +134,34 @@ async def post(
             await webhook.send(embed=content, thread=thread)
         else:
             await webhook.send(embed=content, view=view)
-    # if the post is not an embed (which implies there's an 'error'), return the error
+        # if the post is not an embed (which implies there's an 'error'), return the error
     else:
-        if not isinstance(ctx, Interaction):
-            await ctx.respond(content, ephemeral=True)
+        # if the ctx is NOT an Interaction (ie is not from postEngagement buttons)
+        if not isinstance(content, Interaction):
+            await msg.reply(content, ephemeral=True)
+        # if it is from postEngagement buttons
         else:
-            await ctx.followup.send(content, ephemeral=True)
+            await msg.reply(content, ephemeral=True)
 
-bot.run(token)
+
+
+class MyClient(discord.Client):
+    async def on_ready(self):
+        print(f"Logged in as {self.user} (ID: {self.user.id})")
+        print("------")
+
+    async def on_message(self, message):
+        if message.author.id == self.user.id:
+            print("oh no!")
+            return
+
+        if message.channel.name.capitalize() == 'Bloggity':
+            platform = message.channel.name.capitalize()
+            makepost = message.content
+            handle = message.author.display_name
+            await post(platform, handle, message, makepost)
+       
+
+
+
+MyClient().run(token)
