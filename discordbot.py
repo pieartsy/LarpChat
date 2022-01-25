@@ -1,5 +1,5 @@
 import discord
-from discord.commands import Option
+from discord import commands
 from discord.interactions import Interaction
 from discord.ui import Button, View
 
@@ -15,6 +15,9 @@ token = os.environ.get('TOKEN')
 guildID = 385833475954966529
 
 platforms = ['Bloggity', 'Flitter', 'XPosure']
+
+bot = discord.Bot()
+
 
 #makes post buttons
 class postEngagement(View):
@@ -33,9 +36,8 @@ class postEngagement(View):
     async def share (self, button: Button, interaction: Interaction):
 
         await interaction.response.defer()
-      # await interaction.followup.send("What say you?", ephemeral=True, delete_after=3.0)
-  #      quote = self.makepost
 
+    # checks to make sure the comment only occurs for the user who interacted with the button
         def check(m):
             if m.author == interaction.user:
                 return m
@@ -47,7 +49,7 @@ class postEngagement(View):
     #        quote += "\n" + self.makepost
    #         print(quote)
             shareComment = f"> {self.makepost}\n\n ***@{self.handle}*** {comment.content}"
-            await post(interaction, self.platform, interaction.user.display_name, interaction.message, shareComment, None)
+            await post(self.platform, interaction.user.display_name, interaction.message, shareComment, None)
 
     #makes a thread where you can reply to the original post
     @discord.ui.button(label="reply", style=discord.ButtonStyle.primary, emoji="🗨")
@@ -56,7 +58,8 @@ class postEngagement(View):
         if self.thread == None:
             self.thread = await interaction.message.create_thread(name=f"reply to @{self.handle}")
         await interaction.response.defer()
-    #   await interaction.followup.send("What say you?:", ephemeral=True, delete_after=3.0)
+        
+        # checks to make sure the reply only occurs for the user who interacted with the button
         def check(m):
             if m.author == interaction.user:
                 return m
@@ -64,7 +67,7 @@ class postEngagement(View):
         reply = await bot.wait_for(event='message', check=check)
         if reply:
             await reply.delete()
-            await post(interaction, self.platform, interaction.user.display_name, interaction.message, reply.content, self.thread)
+            await post(self.platform, interaction.user.display_name, interaction.message, reply.content, self.thread)
 
 
     #increments if you haven't liked the post and decrements if you have
@@ -106,21 +109,20 @@ async def channelmaker(
     ctx,
     ):
     """Make channels and webhooks"""
+    await ctx.delete()
     for platform in platforms:
         if discord.utils.get(ctx.guild.channels, name=platform.lower()):
-            await ctx.delete()
             await ctx.respond("These channels already exist!", ephemeral=True)
             break
         else:
-            postChannel = None
             postChannel = await ctx.guild.create_text_channel(name=platform)
-            await postChannel.set_permissions(ctx.guild.default_role, send_messages_in_threads=False)
             await postChannel.create_webhook(name=platform)
 
+    
+
 # makes a post for the bot
-#@bot.slash_command(guild_ids=[385833475954966529])
-async def post(platform, handle, msg, makepost, thread=None):
-    #'responds' to slash command ping if the ctx is NOT an Interaction (ie is not from postEngagement buttons).
+async def postmaker(platform, handle, msg, makepost, thread=None):
+
     content = platform_post(platform, handle, makepost)
 
     view = postEngagement(platform, handle, makepost)
@@ -144,24 +146,16 @@ async def post(platform, handle, msg, makepost, thread=None):
             await msg.reply(content, ephemeral=True)
 
 
+@bot.slash_command(guild_ids=[guildID])
+async def post(message):
+    if message.author.bot:
+        return
 
-class MyClient(discord.Client):
-    async def on_ready(self):
-        print(f"Logged in as {self.user} (ID: {self.user.id})")
-        print("------")
-
-    async def on_message(self, message):
-        if message.author.id == self.user.id:
-            print("oh no!")
-            return
-
-        if message.channel.name.capitalize() == 'Bloggity':
+    if message.channel.name.capitalize() in platforms:
             platform = message.channel.name.capitalize()
             makepost = message.content
             handle = message.author.display_name
             await post(platform, handle, message, makepost)
-       
 
 
-
-MyClient().run(token)
+bot.run(token)
