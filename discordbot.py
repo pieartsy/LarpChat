@@ -1,3 +1,4 @@
+import tokenize
 import discord
 from discord import commands
 from discord.interactions import Interaction
@@ -5,8 +6,6 @@ from discord.ui import Button, View
 
 #to join paths
 import os
-
-bot = discord.Bot()
 
 #discord bot token
 token = os.environ.get('TOKEN')
@@ -121,7 +120,7 @@ async def channelmaker(
     
 
 # makes a post for the bot
-async def postmaker(platform, handle, msg, makepost, thread=None):
+async def post(platform, handle, msg, makepost, thread=None):
 
     content = platform_post(platform, handle, makepost)
 
@@ -146,16 +145,16 @@ async def postmaker(platform, handle, msg, makepost, thread=None):
             await msg.reply(content, ephemeral=True)
 
 
-@bot.slash_command(guild_ids=[guildID])
-async def post(message):
+@bot.event
+async def on_message(message):
     if message.author.bot:
         return
 
     if message.channel.name.capitalize() in platforms:
-            platform = message.channel.name.capitalize()
-            makepost = message.content
-            handle = message.author.display_name
-            await post(platform, handle, message, makepost)
+        platform = message.channel.name.capitalize()
+        makepost = message.content
+        handle = message.author.display_name
+        await post(platform, handle, message, makepost)
 
 
 bot.run(token)
