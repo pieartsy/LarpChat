@@ -13,10 +13,12 @@ token = os.environ.get('TOKEN')
 #token of my test server
 guildID = 385833475954966529
 
-platforms = ['Bloggity', 'Flitter', 'XPosure']
+platforms = ['Bloggity', 'Flitter', 'Xposure']
 
-bot = discord.Bot()
+intents = discord.Intents.default()
+intents.message_content = True
 
+bot = discord.Bot(intents=intents)
 
 #makes post buttons
 class postEngagement(View):
@@ -94,7 +96,7 @@ def platform_post(platform=str, handle=str, makepost=str):
         else:
             embed=discord.Embed(description=makepost, title="@" + handle, colour=0x55acee)
             return(embed)
-    elif platform == "XPosure":
+    elif platform == "Xposure":
         embed=discord.Embed(description=makepost, title="@" + handle, colour=0xE1306C)
         return(embed)
     elif platform == "Bloggity":
@@ -147,13 +149,16 @@ async def post(platform, handle, msg, makepost, thread=None):
 
 @bot.event
 async def on_message(message):
+
     if message.author.bot:
         return
 
     if message.channel.name.capitalize() in platforms:
         platform = message.channel.name.capitalize()
         makepost = message.content
+        print(message.content)
         handle = message.author.display_name
+        await message.delete()
         await post(platform, handle, message, makepost)
 
 
