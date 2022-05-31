@@ -1,6 +1,4 @@
-import tokenize
 import discord
-from discord import commands
 from discord.interactions import Interaction
 from discord.ui import Button, View
 
@@ -15,6 +13,7 @@ guildID = 385833475954966529
 
 platforms = ['Bloggity', 'Flitter', 'Xposure']
 
+# intents let me access message content with discord's new privacy permissions
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -32,7 +31,7 @@ class postEngagement(View):
         # thread ID
         self.thread = None
 
-    #A retweet/share with comment
+    #A quote retweet/share with comment
     @discord.ui.button(label="share", style=discord.ButtonStyle.green, emoji="🔁")
     async def share (self, button: Button, interaction: Interaction):
 
@@ -42,15 +41,15 @@ class postEngagement(View):
         def check(m):
             if m.author == interaction.user:
                 return m
-
+    #waits for the user to add a comment to the share
         comment = await bot.wait_for(event='message', check=check)
 
         if comment:
             await comment.delete()
-    #        quote += "\n" + self.makepost
-   #         print(quote)
-            shareComment = f"> {self.makepost}\n\n ***@{self.handle}*** {comment.content}"
-            await post(self.platform, interaction.user.display_name, interaction.message, shareComment, None)
+            shareComment = f"@{self.handle}\n\t{self.makepost}"
+            shareComment = shareComment.replace('py', '').replace('`', '')
+            shareBlock = f"{comment.content}```py\n{shareComment}```"
+            await post(self.platform, interaction.user.display_name, interaction.message, shareBlock, None)
 
     #makes a thread where you can reply to the original post
     @discord.ui.button(label="reply", style=discord.ButtonStyle.primary, emoji="🗨")
@@ -156,7 +155,6 @@ async def on_message(message):
     if message.channel.name.capitalize() in platforms:
         platform = message.channel.name.capitalize()
         makepost = message.content
-        print(message.content)
         handle = message.author.display_name
         await message.delete()
         await post(platform, handle, message, makepost)
