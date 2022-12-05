@@ -3,11 +3,13 @@ import discord
 from engagement import postEngagement
 
 class Post():
-    def __init__(self, p, h=str, c=str, t=None):
+    def __init__(self, p, u, c=str, t=None):
         self.platform = p
-        self.handle = h
+        self.user = u
         self.postContent = c
         self.thread = t
+
+        self.handle = u.display_name
         self.platformName = p.name.capitalize()
 
     # sends a post for the bot
@@ -39,7 +41,7 @@ class Post():
         
         # if the post is not an embed (which implies there's an 'error'), return the error
         else:
-            await webhook.send(postMade, ephemeral=True)
+            await self.user.send(postMade)
 
     # formats the posts according to each channel 'platform'
     def platform_post(self):
@@ -52,10 +54,10 @@ class Post():
         return embed
 
     def flitterPost(self):
-        # character limit for flitter. if post is more than 280 characters, resends the post in an ephemeral/error message that tells you to try again. i think this is currently broken due to ephemeral stuff being weird with the library update
+        # character limit for flitter. if post is more than 280 characters, resends the post in an error message DM telling you to try again.
         if len(self.postContent) >= 280:
             toolong = len(self.postContent) - 280
-            err = f"Your Flitter post was {toolong} characters too long!\n\n_{self.postContent}_\n\nFlit shorter!"
+            err = f"Your Flitter post was {toolong} characters too long!\n\n>>> {self.postContent}_\n\nFlit shorter!"
             return(err)
         else:
         # formats an embed for the Flitter channel with a blue color

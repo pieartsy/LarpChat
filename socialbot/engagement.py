@@ -38,7 +38,7 @@ class postEngagement(View):
             shareBlock = f"{comment.content}```py\n{shareComment}```"
             # sends to the post function but in the qrt format
             from posts import Post
-            commentPost = Post(self.platform, interaction.user.display_name, shareBlock)
+            commentPost = Post(self.platform, interaction.user, shareBlock)
 
             print("attempting to share ", self.postContent)
             await commentPost.makePost()
@@ -66,7 +66,7 @@ class postEngagement(View):
             else:
                 thread = interaction.message.thread
 
-            replyPost = Post(self.platform, interaction.user.display_name, reply.content, thread)
+            replyPost = Post(self.platform, interaction.user, reply.content, thread)
             print("attempting to make reply to ", self.postContent, "with ", reply.content) 
             await replyPost.makePost()
 

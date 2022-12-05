@@ -26,8 +26,8 @@ async def on_message(message):
     if message.channel.name.capitalize() in platforms:
         # add these variables
         platform = message.channel
+        user = message.author
         postContent = message.content
-        handle = message.author.display_name
         thread = message.thread
 
         try:
@@ -36,7 +36,7 @@ async def on_message(message):
             pass
  
         # make post instance and call makepost function
-        post = Post(platform, handle, postContent, thread)
+        post = Post(platform, user, postContent, thread)
         try:
             print("sending '", postContent, "' from on_message")
             await post.makePost()
