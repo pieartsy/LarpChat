@@ -7,7 +7,7 @@ from botvars import bot
 #makes post buttons
 class postEngagement(View):
 
-    def __init__(self, p=None, h=None, c=None):
+    def __init__(self, p, h, c):
         super().__init__(timeout = None)
         self.platform = p
         self.handle = h
