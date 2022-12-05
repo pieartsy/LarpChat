@@ -1,4 +1,5 @@
 import discord
+import contextlib
 
 #to join paths
 import os
@@ -32,19 +33,18 @@ async def on_message(message):
 
         try:
             await message.delete()
+            # make post instance and call makepost function
+            post = Post(platform, user, postContent, thread)
+            try:
+                print("sending '", postContent, "' from on_message")
+                await post.makePost()
+            except:
+                await platform.send("That didn't work :(")
+                raise Exception("making a post didn't work")
         except:
             pass
- 
-        # make post instance and call makepost function
-        post = Post(platform, user, postContent, thread)
-        try:
-            print("sending '", postContent, "' from on_message")
-            await post.makePost()
-        except:
-            await platform.send("That didn't work :(")
-            raise Exception("making a post didn't work")
 
-
+        
 
 
 # a slash command that makes 3 channels with webhooks for the 'platforms'

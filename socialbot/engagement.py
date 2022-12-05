@@ -24,14 +24,12 @@ class postEngagement(View):
 
         await interaction.response.defer()
 
-    # checks to make sure the comment only occurs for the user who interacted with the button
-        def check(m):
-            if m.author == interaction.user:
-                return m
-        # waits for the user to add a comment to the share (sent in the channel as a normal message)
-        comment = await bot.wait_for(event='message', check=check)
+        # waits for the user who clicked the button to add a comment to the share (sent in the channel as a normal message)
+        comment = await bot.wait_for(event='message', check=lambda m: m.author == interaction.user)
 
         if comment:
+            print("attempting to delete awaited comment")
+            await comment.delete()
             # the formatting on this is janky but basically i want to make prev comments in a codeblock...
             shareComment = f"@{self.handle}\n\t{self.postContent}"
             shareComment = shareComment.replace('py', '').replace('`', '')
@@ -48,21 +46,17 @@ class postEngagement(View):
     async def reply (self, button: Button, interaction: Interaction):
 
         await interaction.response.defer()
-        
-        # checks to make sure the reply only occurs for the user who interacted with the button
-        def check(m):
-            if m.author == interaction.user:
-                return m
 
-        #waits for the user to add a comment to the share (sent in the channel as a normal message)
-        reply = await bot.wait_for(event='message', check=check)
+        #waits for the user who clicked the button to add a comment to the share (sent in the channel as a normal message)
+        reply = await bot.wait_for(event='message', check = lambda m: m.author == interaction.user)
 
         if reply:
             # sends to the post function but posts in the thread instead of the main channel
+            await reply.delete()
             from posts import Post
 
             if interaction.message.thread == None:
-                thread = await interaction.message.create_thread(name=f"reply to @{self.handle}")
+                thread = await interaction.message.create_thread(name=f"replies")
             else:
                 thread = interaction.message.thread
 

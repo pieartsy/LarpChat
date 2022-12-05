@@ -38,7 +38,8 @@ class Post():
             else:
                 print("sending '", self.postContent, "' in channel\n-------")
                 await webhook.send(embed=postMade, view=view)
-        
+                return
+
         # if the post is not an embed (which implies there's an 'error'), return the error
         else:
             await self.user.send(postMade)
@@ -46,12 +47,11 @@ class Post():
     # formats the posts according to each channel 'platform'
     def platform_post(self):
         if self.platformName == "Flitter":
-            embed = self.flitterPost()
+            return self.flitterPost()
         elif self.platformName == "Xposure":
-            embed = self.xposurePost()
+            return self.xposurePost()
         elif self.platformName == "Bloggity":
-            embed = self.bloggityPost()
-        return embed
+            return self.bloggityPost()
 
     def flitterPost(self):
         # character limit for flitter. if post is more than 280 characters, resends the post in an error message DM telling you to try again.
