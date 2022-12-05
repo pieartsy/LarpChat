@@ -12,15 +12,14 @@ class Post():
 
     # sends a post for the bot
     async def makePost(self):
-        print("attempting post")
+        print("attempting to post '", self.postContent, "'")
         # formats the post according to what channel/platform you're sending your message/'post' in
         postMade = self.platform_post()
         
         # adds the share/reply/like views/reaction buttons underneath
         try:
-            print("attempting to call view")
+            print("attempting to call view for '", self.postContent, "'")
             view = postEngagement(self.platform, self.handle, self.postContent)
-            print(view.postContent)
         except:
             raise Exception("trying to make a view object didn't work")
                 
@@ -28,20 +27,19 @@ class Post():
         #gets specific webhook that matches the platform name
         webhook = discord.utils.get(webhooks, name=self.platformName)
         #if the postContent of the post is an embed and there's a view (ie reaction buttons), send message
-        #if isinstance(postMade, discord.Embed):
-            # if it's within a thread, send it in the thread
-         #   if self.thread:
-          #      await webhook.send(embed=postMade, thread=self.thread)
-            # otherwise send it in the channel
-           # else:
-           #     await webhook.send(embed=postMade, view=view)
-        try:
-            await webhook.send(embed=postMade, view=view)
-        except:
-            raise Exception("sending the actual webhook didn't work")
+        if isinstance(postMade, discord.Embed):
+           #if it's within a thread, send it in the thread
+            if self.thread:
+                print("sending '", self.postContent, "' in thread\n-------")
+                await webhook.send(embed=postMade, thread=self.thread)
+       #      otherwise send it in the channel
+            else:
+                print("sending '", self.postContent, "' in channel\n-------")
+                await webhook.send(embed=postMade, view=view)
+        
         # if the post is not an embed (which implies there's an 'error'), return the error
-     #   else:
-      #      await self.platform.send(postMade, ephemeral=True)
+        else:
+            await webhook.send(postMade, ephemeral=True)
 
     # formats the posts according to each channel 'platform'
     def platform_post(self):
@@ -73,11 +71,7 @@ class Post():
     def xposurePost(self):
         # formats an embed for the Xposure channel with a pink color
         embed=discord.Embed(description=self.postContent, title="@" + self.handle, colour=0xE1306C)
-        print(embed.description, embed.title)
-        try:
-            return(embed)
-        except:
-            raise Exception("making an xposure embed didn't work")
+        return(embed)
 
 
 

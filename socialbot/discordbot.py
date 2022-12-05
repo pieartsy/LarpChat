@@ -28,20 +28,23 @@ async def on_message(message):
         platform = message.channel
         postContent = message.content
         handle = message.author.display_name
- 
-        # make post instance and call makepost function
-        post = Post(platform, handle, postContent)
-        print(post.postContent, post.platformName, post.handle)
-        try:
-            await post.makePost()
-        except:
-            await platform.send("That didn't work :(")
-            raise Exception("making a post didn't work")
+        thread = message.thread
 
         try:
             await message.delete()
         except:
             pass
+ 
+        # make post instance and call makepost function
+        post = Post(platform, handle, postContent, thread)
+        try:
+            print("sending '", postContent, "' from on_message")
+            await post.makePost()
+        except:
+            await platform.send("That didn't work :(")
+            raise Exception("making a post didn't work")
+
+
 
 
 # a slash command that makes 3 channels with webhooks for the 'platforms'

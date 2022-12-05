@@ -8,15 +8,15 @@ from botvars import bot
 class postEngagement(View):
 
     def __init__(self, p, h, c):
-        print("attempting view")
+        print("attempting view for", c)
         super().__init__()
         self.platform = p
         self.handle = h
         self.postContent = c
+        
         # who liked the post (by clicking the heart button)
         self.whoLiked = []
-        # thread ID
-        self.thread = None
+
 
     #A quote retweet/share with comment
     @discord.ui.button(label="share", style=discord.ButtonStyle.green, emoji="🔁")
@@ -32,7 +32,6 @@ class postEngagement(View):
         comment = await bot.wait_for(event='message', check=check)
 
         if comment:
-            # delete the original message sent in the channel <- this is throwing an exception error
             # the formatting on this is janky but basically i want to make prev comments in a codeblock...
             shareComment = f"@{self.handle}\n\t{self.postContent}"
             shareComment = shareComment.replace('py', '').replace('`', '')
@@ -40,15 +39,13 @@ class postEngagement(View):
             # sends to the post function but in the qrt format
             from posts import Post
             commentPost = Post(self.platform, interaction.user.display_name, shareBlock)
+
+            print("attempting to share ", self.postContent)
             await commentPost.makePost()
 
     # makes a thread where you can reply to the original post
     @discord.ui.button(label="reply", style=discord.ButtonStyle.primary, emoji="🗨")
     async def reply (self, button: Button, interaction: Interaction):
-
-        # if a thread does not already exist, make a thread called "reply to [initial thread handle]"
-        if self.thread == None:
-            self.thread = await interaction.message.create_thread(name=f"reply to @{self.handle}")
 
         await interaction.response.defer()
         
@@ -63,8 +60,16 @@ class postEngagement(View):
         if reply:
             # sends to the post function but posts in the thread instead of the main channel
             from posts import Post
-            replyPost = Post(self.platform, interaction.user.display_name, reply.content, self.thread)
+
+            if interaction.message.thread == None:
+                thread = await interaction.message.create_thread(name=f"reply to @{self.handle}")
+            else:
+                thread = interaction.message.thread
+
+            replyPost = Post(self.platform, interaction.user.display_name, reply.content, thread)
+            print("attempting to make reply to ", self.postContent, "with ", reply.content) 
             await replyPost.makePost()
+
 
     #increments if you haven't liked the post and decrements if you have
     @discord.ui.button(label="0", style=discord.ButtonStyle.grey, emoji="❤")
