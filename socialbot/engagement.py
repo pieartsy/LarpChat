@@ -8,7 +8,6 @@ from botvars import bot
 class postEngagement(View):
 
     def __init__(self, p, h, c):
-        print("attempting view for", c)
         super().__init__()
         self.platform = p
         self.handle = h
@@ -21,25 +20,26 @@ class postEngagement(View):
     #A quote retweet/share with comment
     @discord.ui.button(label="share", style=discord.ButtonStyle.green, emoji="🔁")
     async def share (self, button: Button, interaction: Interaction):
-
+        
         await interaction.response.defer()
 
         # waits for the user who clicked the button to add a comment to the share (sent in the channel as a normal message)
-        comment = await bot.wait_for(event='message', check=lambda m: m.author == interaction.user)
+        share = await bot.wait_for(event='message', check=lambda m: m.author == interaction.user)
 
-        if comment:
-            print("attempting to delete awaited comment")
-            await comment.delete()
+        if share:
+            await share.delete()
             # the formatting on this is janky but basically i want to make prev comments in a codeblock...
-            shareComment = f"@{self.handle}\n\t{self.postContent}"
-            shareComment = shareComment.replace('py', '').replace('`', '')
-            shareBlock = f"{comment.content}```py\n{shareComment}```"
             # sends to the post function but in the qrt format
+            try:
+                shareEmbed = f"{share.content}\n\n[**Share of:**](https://discord.com/channels/{interaction.guild_id}/{interaction.channel_id}/{interaction.message.id})\n\n**{interaction.message.embeds[0].title}**\n{interaction.message.embeds[0].description}"
+            except:
+                shareEmbed=share.content
+                raise Exception("making embed string didn't work")
+                
             from posts import Post
-            commentPost = Post(self.platform, interaction.user, shareBlock)
 
-            print("attempting to share ", self.postContent)
-            await commentPost.makePost()
+            sharePost = Post(self.platform, interaction.user, shareEmbed)
+            await sharePost.makePost()
 
     # makes a thread where you can reply to the original post
     @discord.ui.button(label="reply", style=discord.ButtonStyle.primary, emoji="🗨")
@@ -61,7 +61,6 @@ class postEngagement(View):
                 thread = interaction.message.thread
 
             replyPost = Post(self.platform, interaction.user, reply.content, thread)
-            print("attempting to make reply to ", self.postContent, "with ", reply.content) 
             await replyPost.makePost()
 
 
