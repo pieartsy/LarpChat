@@ -7,8 +7,8 @@ from botvars import bot
 #makes post buttons
 class postEngagement(View):
 
-    def __init__(self, p, h, c):
-        super().__init__()
+    def __init__(self, p=None, h=None, c=None):
+        super().__init__(timeout = None)
         self.platform = p
         self.handle = h
         self.postContent = c
@@ -18,7 +18,7 @@ class postEngagement(View):
 
 
     #A quote retweet/share with comment
-    @discord.ui.button(label="share", style=discord.ButtonStyle.green, emoji="🔁")
+    @discord.ui.button(label="share", style=discord.ButtonStyle.green, emoji="🔁", custom_id="share")
     async def share (self, button: Button, interaction: Interaction):
         
         await interaction.response.defer()
@@ -28,10 +28,9 @@ class postEngagement(View):
 
         if share:
             await share.delete()
-            # the formatting on this is janky but basically i want to make prev comments in a codeblock...
             # sends to the post function but in the qrt format
             try:
-                shareEmbed = f"{share.content}\n\n[**Share of:**](https://discord.com/channels/{interaction.guild_id}/{interaction.channel_id}/{interaction.message.id})\n\n**{interaction.message.embeds[0].title}**\n{interaction.message.embeds[0].description}"
+                shareEmbed = f"{share.content}\n\n[**Replying to:**](https://discord.com/channels/{interaction.guild_id}/{interaction.channel_id}/{interaction.message.id})\n\n**{interaction.message.embeds[0].title}**\n{interaction.message.embeds[0].description}"
             except:
                 shareEmbed=share.content
                 raise Exception("making embed string didn't work")
@@ -42,7 +41,7 @@ class postEngagement(View):
             await sharePost.makePost()
 
     # makes a thread where you can reply to the original post
-    @discord.ui.button(label="reply", style=discord.ButtonStyle.primary, emoji="🗨")
+    @discord.ui.button(label="reply", style=discord.ButtonStyle.primary, emoji="🗨", custom_id="reply")
     async def reply (self, button: Button, interaction: Interaction):
 
         await interaction.response.defer()
@@ -65,7 +64,7 @@ class postEngagement(View):
 
 
     #increments if you haven't liked the post and decrements if you have
-    @discord.ui.button(label="0", style=discord.ButtonStyle.grey, emoji="❤")
+    @discord.ui.button(label="0", style=discord.ButtonStyle.grey, emoji="❤", custom_id="like")
     async def count(self, button: Button, interaction: Interaction):
         # counter
         number = int(button.label) if button.label else 0
