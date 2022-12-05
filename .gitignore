@@ -1,3 +1,4 @@
-chatenv
+socialvenv
 .env
 notes
+socialbot/__pycache__
