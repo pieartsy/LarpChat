@@ -2,3 +2,4 @@ socialvenv
 .env
 notes
 socialbot/__pycache__
+user_accounts.db
