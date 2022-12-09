@@ -55,6 +55,9 @@ async def on_message(message):
         # skips over deleting an original message and duplicate posting if an original message was already deleted. this is relevant for the share/reply views in postEngagement.
         try:
             await message.delete()
+        except:
+            pass
+        else:
             # make post instance and call makepost function
             post = Post(platform, user, postContent, thread)
             # general try/except to just signal something's wrong with my code
@@ -62,8 +65,6 @@ async def on_message(message):
                 await post.makePost()
             except:
                 raise Exception("making a post didn't work")
-        except:
-            pass
 
 @bot.slash_command()
 async def channelmaker(

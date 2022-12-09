@@ -26,17 +26,22 @@ class postEngagement(View):
         share = await bot.wait_for(event='message', check=lambda m: m.author == interaction.user)
 
         if share:
-            await share.delete()
-
-            # a formatted embed for quote replies
-            shareEmbed = f"{share.content}\n\n[**Replying to:**](https://discord.com/channels/{interaction.guild_id}/{interaction.channel_id}/{interaction.message.id})\n\n**{interaction.message.embeds[0].title}**\n{interaction.message.embeds[0].description}"
-            shareEmbed=share.content
+            print("trying to delete share of ", share.content)
+            try:   
+                await share.delete()
+                print("deleted share")
+            except:
+                pass
+            else:
+                # a formatted embed for quote replies
+                shareEmbed = f"{share.content}\n\n[**Replying to:**](https://discord.com/channels/{interaction.guild_id}/{interaction.channel_id}/{interaction.message.id})\n\n**{interaction.message.embeds[0].title}**\n{interaction.message.embeds[0].description}"
+                    
+                from posts import Post
                 
-            from posts import Post
-            
-            # makes a Post object that's an embedded reply
-            sharePost = Post(interaction.channel, interaction.user, shareEmbed)
-            await sharePost.makePost()
+                # makes a Post object that's an embedded reply
+                sharePost = Post(interaction.channel, interaction.user, shareEmbed)
+                await sharePost.makePost()
+
 
     @discord.ui.button(label="reply", style=discord.ButtonStyle.primary, emoji="🗨", custom_id="reply")
     async def reply (self, button: Button, interaction: Interaction):
@@ -47,19 +52,25 @@ class postEngagement(View):
         reply = await bot.wait_for(event='message', check = lambda m: m.author == interaction.user)
 
         if reply:
-            await reply.delete()
-            from posts import Post
-
-            # if the messsage does not have a created thread already, make a thread to post in
-            if interaction.message.thread == None:
-                thread = await interaction.message.create_thread(name=f"replies")
-            # otherwise set to existing created thread
+            print("trying to delete reply of ", reply.content)
+            try:   
+                await reply.delete()
+                print("deleted reply")
+            except:
+                pass
             else:
-                thread = interaction.message.thread
+                from posts import Post
 
-            # makes a Post object but in a thread
-            replyPost = Post(interaction.channel, interaction.user, reply.content, thread)
-            await replyPost.makePost()
+                # if the messsage does not have a created thread already, make a thread to post in
+                if interaction.message.thread == None:
+                    thread = await interaction.message.create_thread(name=f"replies")
+                # otherwise set to existing created thread
+                else:
+                    thread = interaction.message.thread
+
+                # makes a Post object but in a thread
+                replyPost = Post(interaction.channel, interaction.user, reply.content, thread)
+                await replyPost.makePost()
 
 
     @discord.ui.button(label="0", style=discord.ButtonStyle.grey, emoji="❤", custom_id="like")
