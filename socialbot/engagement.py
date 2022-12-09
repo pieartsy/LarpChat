@@ -7,15 +7,9 @@ from botvars import bot
 #makes post buttons
 class postEngagement(View):
 
-    def __init__(self, p, h, c):
+    def __init__(self):
         super().__init__(timeout = None)
-        self.platform = p
-        self.handle = h
-        self.postContent = c
-        
-        # who liked the post (by clicking the heart button)
         self.whoLiked = []
-
 
     #A quote retweet/share with comment
     @discord.ui.button(label="share", style=discord.ButtonStyle.green, emoji="🔁", custom_id="share")
@@ -37,7 +31,7 @@ class postEngagement(View):
                 
             from posts import Post
 
-            sharePost = Post(self.platform, interaction.user, shareEmbed)
+            sharePost = Post(interaction.channel, interaction.user, shareEmbed)
             await sharePost.makePost()
 
     # makes a thread where you can reply to the original post
@@ -59,13 +53,16 @@ class postEngagement(View):
             else:
                 thread = interaction.message.thread
 
-            replyPost = Post(self.platform, interaction.user, reply.content, thread)
+            replyPost = Post(interaction.channel, interaction.user, reply.content, thread)
             await replyPost.makePost()
 
 
     #increments if you haven't liked the post and decrements if you have
     @discord.ui.button(label="0", style=discord.ButtonStyle.grey, emoji="❤", custom_id="like")
     async def count(self, button: Button, interaction: Interaction):
+
+        # who liked the post (by clicking the heart button)
+
         # counter
         number = int(button.label) if button.label else 0
         # if the person interacting has not liked the post before (not in whoLiked), increment the counter

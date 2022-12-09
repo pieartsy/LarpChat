@@ -76,7 +76,7 @@ async def channelmaker(
         await ctx.respond("This category already exists!", ephemeral=True)
         postCategory = discord.utils.get(ctx.guild.categories, name="platforms")
     else:
-        postCategory = await ctx.guild.create_category(name="platforms", overwrites = {ctx.guild.default_role: discord.PermissionOverwrite(view_channel=False)})
+        postCategory = await ctx.guild.create_category(name="platforms") #overwrites = {ctx.guild.default_role: discord.PermissionOverwrite(view_channel=False)})
     
     for platform in platforms:
         if discord.utils.get(ctx.guild.channels, name=platform.lower()):

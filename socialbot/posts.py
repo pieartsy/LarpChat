@@ -19,7 +19,7 @@ class Post():
         
         # adds the share/reply/like views/reaction buttons underneath
 
-        view = postEngagement(self.platform, self.handle, self.postContent)
+        view = postEngagement()
                 
         webhooks = await self.platform.webhooks()
         #gets specific webhook that matches the platform name
