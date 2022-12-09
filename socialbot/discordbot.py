@@ -97,17 +97,25 @@ async def account(
     if platform in platforms:
         uniqueAccountVals = (ctx.user.id, ctx.guild_id, platform)
         
-        f = cursor.execute("SELECT handle FROM account WHERE (userid, serverid, platform) = (?, ?, ?)", (uniqueAccountVals)).fetchone()
+        
+        findHandle = cursor.execute("SELECT handle FROM account WHERE platform = ?", (platform,)).fetchone()[0]
 
-        if f == None:
+        print(findHandle, findHandle==handle)
+
+        findAccount = cursor.execute("SELECT handle FROM account WHERE (userid, serverid, platform) = (?, ?, ?)", (uniqueAccountVals)).fetchone()
+
+        if findHandle != handle and findAccount == None:
             cursor.execute("INSERT INTO account (userid, serverid, platform, handle) VALUES (?, ?, ?, ?)", tuple([*uniqueAccountVals, handle]),)
-        else:
+            await ctx.send_response(content=f"You set your {platform} handle to {handle}.",ephemeral=True)
+        elif findHandle != handle and findAccount:
             cursor.execute("UPDATE account SET handle = ? WHERE (userid, serverid, platform) = (?, ?, ?)", tuple([handle, *uniqueAccountVals]),)
+            await ctx.send_response(content=f"You set your {platform} handle to {handle}.",ephemeral=True)
+        elif handle == findHandle:
+            await ctx.respond(content=f"Sorry! The handle {handle} is already taken on {platform}. Be more creative!", ephemeral=True)
+            return
 
         connection.commit()
         connection.close()
-
-        await ctx.send_response(content=f"You set your {platform} handle to {handle}.",ephemeral=True)
 
     else:
         await ctx.send_response(content=f"This command can only be used in platform channels.", ephemeral=True)
