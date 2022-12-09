@@ -1,7 +1,5 @@
 import discord
-#from discord.ext import commands
-
-#bot = commands.Bot(command_prefix="!")
+from discord.ext import commands
 
 #to join paths
 import os
@@ -18,15 +16,11 @@ platforms = ["Flitter", "Bloggity", "Xposure"]
 # token of my test server
 guild_ID = 385833475954966529
 
-#@bot.event
-#async def on_ready():
- #   bot.add_view(postEngagement()) # Registers a View for persistent listening
+@bot.event
+async def on_ready():
+    bot.add_view(postEngagement()) # Registers a View for persistent listening
+    print("View registered")
 
-#@bot.command()
-#@commands.is_owner()
-#async def view(ctx):
- #   await ctx.send_response("view", view=postEngagement())
-    
 
 # on every message
 @bot.event
