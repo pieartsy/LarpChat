@@ -114,25 +114,30 @@ async def account(
         # composite primary key
         uniqueAccountVals = (ctx.user.id, ctx.guild_id, platform)
 
-        # checks if handle already exists in platform
-        findHandle = cursor.execute("SELECT handle FROM account WHERE platform = ?", (platform,)).fetchone()[0]
+        # checks if handle already exists in platform per server
+        findPlatformHandle = cursor.execute("SELECT handle FROM account WHERE (serverid, platform) = (?, ?)", (ctx.guild_id, platform,)).fetchall()
+        findPlatformHandle = [h for handles in findPlatformHandle for h in handles]
 
+        print(findPlatformHandle)
+        try:
         # checks if user already has a handle associated with them on this platform
-        findAccount = cursor.execute("SELECT handle FROM account WHERE (userid, serverid, platform) = (?, ?, ?)", (uniqueAccountVals)).fetchone()[0]
+            findUserHandle = cursor.execute("SELECT handle FROM account WHERE (userid, serverid, platform) = (?, ?, ?)", (uniqueAccountVals)).fetchone()[0]
+        except:
+            findUserHandle = None
 
         # if the handle doesn't exist at all in the platform, add the handle for the user in the database
-        if findHandle != handle and findAccount == None:
+        if handle not in findPlatformHandle and findUserHandle == None:
             cursor.execute("INSERT INTO account (userid, serverid, platform, handle) VALUES (?, ?, ?, ?)", tuple([*uniqueAccountVals, handle]),)
             await ctx.respond(content=f"You set your {platform} handle to {handle}.", ephemeral=True)
         # if the handle doesn't exist but the user had a different handle, update the user's handle
-        elif findHandle != handle and findAccount:
+        elif handle not in findPlatformHandle and findUserHandle:
             cursor.execute("UPDATE account SET handle = ? WHERE (userid, serverid, platform) = (?, ?, ?)", tuple([handle, *uniqueAccountVals]),)
             await ctx.respond(content=f"You set your {platform} handle to {handle}.", ephemeral=True)
         # if the handle exists and matches the user's handle, remind them that's their handle already
-        elif findHandle == findAccount:
+        elif handle == findUserHandle:
             await ctx.respond(content=f"You already set your handle to {handle}, silly!", ephemeral=True)
         # if the handle exists in the database but is not the user's handle, tell them it's taken
-        elif findHandle == handle:
+        elif handle in findPlatformHandle:
             await ctx.respond(content=f"Sorry! The handle {handle} is already taken on {platform}. Be more creative!", ephemeral=True)
         
         # commit changes and close server

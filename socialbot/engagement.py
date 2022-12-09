@@ -18,7 +18,8 @@ class postEngagement(View):
 
     @discord.ui.button(label="share", style=discord.ButtonStyle.green, emoji="🔁", custom_id="share")
     async def share (self, button: Button, interaction: Interaction):
-        """A quote retweet/share with comment."""
+        """A quote retweet/share with comment.
+        """
 
         # waits for the user who clicked the button to add a comment to the share (sent in the channel as a normal message)
         await interaction.response.defer()
